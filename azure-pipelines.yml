@@ -46,7 +46,6 @@ stages:
         pip install -r requirements.txt
       workingDirectory: $(projectRoot)
       displayName: "Install requirements"
-
     - task: ArchiveFiles@2
       displayName: 'Archive files'
       inputs:
@@ -61,7 +60,7 @@ stages:
       artifact: drop
 
 - stage: QA
-  displayName: 'Deploy Web App'
+  displayName: 'QA Deploy'
   dependsOn: Build
   condition: succeeded()
   jobs:
@@ -85,10 +84,10 @@ stages:
               azureSubscription: $(azureServiceConnectionId)
               appName: $(webAppName)
               package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
-  
+              appType: webAppLinux
 - stage: Production
-  displayName: 'Production stage'
-  dependsOn: Build
+  displayName: 'Production Deploy'
+  dependsOn: QA
   condition: succeeded()
   jobs:
   - deployment: DeploymentJob
@@ -106,9 +105,9 @@ stages:
             displayName: 'Use Python version'
 
           - task: AzureWebApp@1
-            displayName: 'Deploy Azure Web App : productionapplicationpython'
+            displayName: 'Deploy Azure Web App : firstpythonapplication'
             inputs:
               azureSubscription: $(azureServiceConnectionId)
               appName: $(webAppName)
               package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
-
+              appType: webAppLinux
